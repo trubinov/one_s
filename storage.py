@@ -173,7 +173,7 @@ class Storage:
         """
         if self.new_version is None:
             return 2
-        params = ['/ConfigurationRepositoryCommit -Objects {}'.format(self.objects_file),
+        params = ['/ConfigurationRepositoryCommit',  '-Objects {}'.format(self.objects_file),
                   '-comment', '{} - night build'.format(self.new_version)]
         result = self._designer(params)
         print('Commit: {}'.format(result))
