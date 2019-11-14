@@ -77,7 +77,8 @@ class Storage:
         :return:
         """
         start_time = datetime.now()
-        designer_args = [command, self.log_designer_params]
+        designer_args = command
+        designer_args.extend(self.log_designer_params)
         completed_process = self.platform.designer(self.repo_designer_params, designer_args)
         if DEBUG:
             print(completed_process)
