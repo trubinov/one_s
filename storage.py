@@ -44,6 +44,8 @@ class Storage:
         path to generated cf file
     cfu_file : str
         path to generated cfu file
+    config_name : str
+        configuration name to find in root_config_file
     """
     build_path: str
 
@@ -68,6 +70,7 @@ class Storage:
         self.new_version = None
         self.cf_file = None
         self.cfu_file = None
+        self.config_name = configuration['config_name']
 
     def _designer(self, command: list) -> int:
         """
@@ -141,7 +144,8 @@ class Storage:
         ns_di = '{http://v8.1c.ru/8.3/xcf/dumpinfo}'
         _cdi_xml_file = self.dump_path + '\\ConfigDumpInfo.xml'
         xml_object = etree.parse(_cdi_xml_file)
-        search_str = './{ns}ConfigVersions/{ns}Metadata[@name="Configuration.УмнаяЛогистика"]'.format(ns=ns_di)
+        search_str = './{ns}ConfigVersions/{ns}Metadata[@name="Configuration.{config_name}"]'\
+            .format(ns=ns_di, config_name=self.config_name)
         cdi_version_elems = xml_object.findall(search_str)
         if len(cdi_version_elems) == 0:
             print('Error while parse ConfigDumpInfo.xml')
