@@ -1,9 +1,12 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name='one_s',
     version='1.0',
-    packages=find_packages(),
+    packages=['one_s'],
+    package_dir={
+        '': 'src'
+    },
     url='https://github.com/trubinov/one_s',
     license='no-license',
     author='trubinov',
