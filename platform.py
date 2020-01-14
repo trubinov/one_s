@@ -35,7 +35,7 @@ class Platform1C:
                 run_args.extend(args)
             return subprocess.run(run_args)
         else:
-            args_str = ''.join(args) if args is not None else ''
+            args_str = ' '.join(args) if args is not None else ''
             return subprocess.run([self.exe_path, '{} {} {}'.format(run_type, ' '.join(conn_args), args_str)],
                                   shell=True)
 
@@ -91,7 +91,7 @@ class BaseInfo:
 
         :return: None
         """
-        designer_args = ['/UpdateCfg {}'.format(update_file), '/UpdateDBCfg', '-Dynamic+']
+        designer_args = ['/UpdateCfg', update_file, '/UpdateDBCfg', '-Dynamic+']
         designer_process = self.platform.designer(self.base_conn_args, designer_args)
         print('Designer step done for base {}, return code: {}'.format(self.name, designer_process.returncode))
         enterprise_process = self.platform.enterprise(self.base_conn_args, [])
