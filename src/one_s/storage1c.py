@@ -4,7 +4,7 @@ from shutil import copyfile
 
 from lxml import etree
 
-from src.one_s.platform1c import Platform1C
+from one_s.platform1c import Platform1C
 
 # need to print debug message
 DEBUG: bool = True
