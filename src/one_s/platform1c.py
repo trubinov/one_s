@@ -1,4 +1,5 @@
 import subprocess
+import logging
 
 
 class Platform1C:
@@ -93,6 +94,6 @@ class BaseInfo:
         """
         designer_args = ['/UpdateCfg', update_file, '/UpdateDBCfg', '-Dynamic+']
         designer_process = self.platform.designer(self.base_conn_args, designer_args)
-        print('Designer step done for base {}, return code: {}'.format(self.name, designer_process.returncode))
+        logging.info('Designer step done for base {}, return code: {}'.format(self.name, designer_process.returncode))
         enterprise_process = self.platform.enterprise(self.base_conn_args, [])
-        print('Enterprise step done for base {}, return code: {}'.format(self.name, enterprise_process.returncode))
+        logging.info('Enterprise step done for base {}, return code: {}'.format(self.name, enterprise_process.returncode))

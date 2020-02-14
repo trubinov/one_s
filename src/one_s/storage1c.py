@@ -1,13 +1,11 @@
 from datetime import datetime
 from os import path, listdir, mkdir
 from shutil import copyfile
+import logging
 
 from lxml import etree
 
 from one_s.platform1c import Platform1C
-
-# need to print debug message
-DEBUG: bool = True
 
 
 class Storage:
@@ -83,9 +81,8 @@ class Storage:
         designer_args = command
         designer_args.extend(self.log_designer_params)
         completed_process = self.platform.designer(self.repo_designer_params, designer_args)
-        if DEBUG:
-            print(completed_process)
-        print('Execution time: {}'.format(datetime.now() - start_time))
+        logging.debug(completed_process)
+        logging.info('Execution time: {}'.format(datetime.now() - start_time))
         return completed_process.returncode
 
     def update_from_repo(self) -> int:
@@ -95,7 +92,7 @@ class Storage:
         :return:
         """
         result = self._designer(['/ConfigurationRepositoryUpdateCfg -force', '/UpdateDBCfg'])
-        print('Update from Storage: {}'.format(result))
+        logging.info('Update from Storage: {}'.format(result))
         return result
 
     def dump_to_files(self) -> int:
@@ -106,10 +103,10 @@ class Storage:
         """
         params = ['/DumpConfigToFiles {}'.format(self.dump_path)]
         if path.exists(self.dump_path):
-            print('Dump with update...')
+            logging.info('Dump with update...')
             params.extend(['-update', '-force', '-getChanges {}'.format(self.diff_file)])
         result = self._designer(params)
-        print('Dump Config: {}'.format(result))
+        logging.info('Dump Config: {}'.format(result))
         return result
 
     def lock_in_repo(self) -> int:
@@ -119,7 +116,7 @@ class Storage:
         :return:
         """
         result = self._designer(['/ConfigurationRepositoryLock', '-Objects {}'.format(self.objects_file)])
-        print('Lock: {}'.format(result))
+        logging.info('Lock: {}'.format(result))
         return result
 
     def upgrade_version(self, next_release: bool = False) -> int:
@@ -134,7 +131,7 @@ class Storage:
         config_xml = etree.parse(self.root_config_file)
         version_elems = config_xml.findall('./{ns}Configuration/{ns}Properties/{ns}Version'.format(ns=ns_md))
         if len(version_elems) == 0:
-            print('Error while parse Configuration.xml')
+            logging.info('Error while parse Configuration.xml')
             return 1
         current_version = version_elems[0].text
         self.new_version = _next_version(current_version, next_release)
@@ -148,14 +145,14 @@ class Storage:
             .format(ns=ns_di, config_name=self.config_name)
         cdi_version_elems = xml_object.findall(search_str)
         if len(cdi_version_elems) == 0:
-            print('Error while parse ConfigDumpInfo.xml')
+            logging.info('Error while parse ConfigDumpInfo.xml')
             return 1
         orig_cv = cdi_version_elems[0].get('configVersion')
         orig_cv32 = orig_cv[0:32]
         cdi_version_elems[0].set('configVersion', orig_cv.replace(orig_cv32, orig_cv32[::-1]))
         xml_object.write(_cdi_xml_file, encoding='utf-8', xml_declaration=True, pretty_print=True)
         # Успех
-        print('Upgrade from {} to {}'.format(current_version, self.new_version))
+        logging.info('Upgrade from {} to {}'.format(current_version, self.new_version))
         return 0
 
     def load_from_files(self):
@@ -167,7 +164,7 @@ class Storage:
         params = ['/LoadConfigFromFiles {}'.format(self.dump_path), '-files {}'.format(self.root_config_file),
                   '-Format Hierarchical', '-updateConfigDumpInfo', '/UpdateDBCfg']
         result = self._designer(params)
-        print('Upload config to storage: {}'.format(result))
+        logging.info('Upload config to storage: {}'.format(result))
         return result
 
     def commit_to_repo(self):
@@ -181,7 +178,7 @@ class Storage:
         params = ['/ConfigurationRepositoryCommit',  '-Objects {}'.format(self.objects_file),
                   '-comment', '{} - night build'.format(self.new_version)]
         result = self._designer(params)
-        print('Commit: {}'.format(result))
+        logging.info('Commit: {}'.format(result))
         return result
 
     def make_build(self):
@@ -211,7 +208,7 @@ class Storage:
         for x in dirs_sorted[:self.prev_amount_cf]:
             build_params.append('-f {}'.format(cf_template.format(self.build_path, x[0])))
         build_result = self._designer(build_params)
-        print('Make build: {}'.format(build_result))
+        logging.info('Make build: {}'.format(build_result))
         return build_result
 
     def copy_ready_files(self):
@@ -259,12 +256,12 @@ class Storage:
         # 4) поместить изменения в хранилище
         commit_result = self.commit_to_repo()
         if lc_result + commit_result > 0:
-            print('Error before making build')
+            logging.info('Error before making build')
             return lc_result + commit_result
         # сделать файл поставки
         build_result = self.make_build()
         if build_result > 0:
-            print('Error while making new build')
+            logging.info('Error while making new build')
             return 1
         # скопировать файлы в сеть
         return self.copy_ready_files()
