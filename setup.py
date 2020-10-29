@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='one_s',
-    version='1.1',
+    version='1.2',
     packages=['one_s'],
     package_dir={
         '': 'src'

@@ -77,6 +77,8 @@ class BaseInfo:
         password
     """
 
+    TRY_COUNT: int = 3
+
     def __init__(self, name, platform: Platform1C, server: str, user: str, password: str):
         self.name = name
         self.platform = platform
@@ -93,7 +95,10 @@ class BaseInfo:
         :return: None
         """
         designer_args = ['/UpdateCfg', update_file, '/UpdateDBCfg', '-Dynamic+']
-        designer_process = self.platform.designer(self.base_conn_args, designer_args)
-        logging.info('Designer step done for base {}, return code: {}'.format(self.name, designer_process.returncode))
-        enterprise_process = self.platform.enterprise(self.base_conn_args, [])
-        logging.info('Enterprise step done for base {}, return code: {}'.format(self.name, enterprise_process.returncode))
+        k, designer_res = 0, 1
+        while k < BaseInfo.TRY_COUNT and designer_res > 0:
+            designer_res = self.platform.designer(self.base_conn_args, designer_args).returncode
+            logging.info('Designer step done for base {}, return code: {}'.format(self.name, designer_res))
+            k = k + 1
+        enterprise_res = self.platform.enterprise(self.base_conn_args, []).returncode
+        logging.info('Enterprise step done for base {}, return code: {}'.format(self.name, enterprise_res))
